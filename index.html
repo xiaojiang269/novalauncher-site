@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NovaLauncher · Minecraft 第三方启动器</title>
+<meta name="description" content="NovaLauncher 是开源的 Minecraft 第三方启动器，支持 Windows、macOS 与 Android。三种登录方式、Forge/Fabric/Quilt/NeoForge 加载器、模组冲突检测、存档备份、液态玻璃外观与一键自更新。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C110F'/%3E%3Crect x='6' y='7' width='5' height='5' fill='%23D9A05B'/%3E%3Crect x='13' y='12' width='5' height='5' fill='%235E8F76'/%3E%3Crect x='20' y='17' width='6' height='6' fill='%23D9A05B'/%3E%3Crect x='9' y='20' width='4' height='4' fill='%235E8F76'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+:root{
+  --bg:#0C110F;
+  --bg2:#10171300;
+  --surface:#141D19;
+  --line:rgba(232,238,230,.12);
+  --line-soft:rgba(232,238,230,.07);
+  --ink:#E8EEE6;
+  --ink-dim:#9AA79E;
+  --accent:#D9A05B;
+  --green:#5E8F76;
+  --mono:"Space Grotesk","Noto Sans SC",system-ui,sans-serif;
+  --sans:"Noto Sans SC","Space Grotesk",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --pad:clamp(20px,5vw,88px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-weight:400;line-height:1.7;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* 方块网格：作为结构性纹理，独立层 */
+.grid-layer{position:fixed;inset:0;pointer-events:none;z-index:0;aria-hidden:true;
+  background-image:linear-gradient(to right,rgba(255,255,255,.028) 1px,transparent 1px),
+                    linear-gradient(to bottom,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(120% 80% at 50% 0%,#000 20%,transparent 78%);
+  -webkit-mask-image:radial-gradient(120% 80% at 50% 0%,#000 20%,transparent 78%);
+}
+.glow{position:fixed;inset:auto 0 0 0;height:46vh;pointer-events:none;z-index:0;
+  background:radial-gradient(60% 100% at 50% 120%,rgba(217,160,91,.14),transparent 70%);
+}
+.wrap{position:relative;z-index:1}
+
+/* ===== 顶部导航 ===== */
+header{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(12,17,15,.72);
+  border-bottom:1px solid var(--line-soft);
+}
+.nav{max-width:1440px;margin:0 auto;padding:0 var(--pad);height:64px;display:flex;align-items:center;gap:32px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-.01em;color:var(--ink);text-decoration:none}
+.brand .mark{width:22px;height:22px;flex:none}
+.navlinks{display:flex;gap:26px;margin-left:8px}
+.navlinks a{color:var(--ink-dim);text-decoration:none;font-size:14px;transition:color .18s}
+.navlinks a:hover{color:var(--ink)}
+.nav-cta{margin-left:auto;display:flex;align-items:center;gap:14px}
+.nav-cta .tag{font-family:var(--mono);font-size:12px;color:var(--ink-dim);border:1px solid var(--line);padding:4px 9px}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:14px;font-weight:500;padding:9px 16px;border:1px solid var(--line);color:var(--ink);background:rgba(255,255,255,.04);transition:all .18s}
+.btn:hover{background:rgba(255,255,255,.09);border-color:rgba(232,238,230,.26)}
+.btn.primary{background:var(--accent);color:#1A1206;border-color:transparent;font-weight:700}
+.btn.primary:hover{background:#E6B075}
+.btn:focus-visible,.navlinks a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ===== Hero ===== */
+.hero{max-width:1440px;margin:0 auto;padding:clamp(48px,7vw,96px) var(--pad) 0}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:clamp(28px,4vw,72px);align-items:center}
+.eyebrow{font-family:var(--mono);font-size:12.5px;color:var(--green);letter-spacing:.02em;display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.eyebrow i{width:7px;height:7px;background:var(--accent);display:inline-block}
+h1{font-size:clamp(34px,4.6vw,62px);line-height:1.16;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{color:var(--ink-dim);font-size:clamp(14.5px,1.25vw,16.5px);max-width:38em;margin-top:22px;line-height:1.85}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.hero-actions .btn{padding:13px 22px;font-size:15px}
+.facts{display:flex;gap:clamp(22px,3.4vw,52px);margin-top:40px;padding-top:24px;border-top:1px solid var(--line-soft)}
+.fact b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);line-height:1.3}
+.fact span{font-size:12.5px;color:var(--ink-dim)}
+.shot-frame{position:relative}
+.shot-frame img{width:100%;display:block;border:1px solid var(--line);
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.02) inset}
+.shot-frame .cap{position:absolute;left:14px;bottom:-13px;font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);background:var(--bg);padding:2px 8px;border:1px solid var(--line-soft)}
+
+/* ===== 分段标题 ===== */
+section{padding:clamp(64px,8vw,120px) 0}
+.inner{max-width:1440px;margin:0 auto;padding:0 var(--pad)}
+.sect-head{display:flex;flex-direction:column;gap:14px;max-width:44em}
+.sect-head h2{font-size:clamp(24px,2.6vw,34px);font-weight:700;letter-spacing:-.015em;line-height:1.3}
+.sect-head p{color:var(--ink-dim);font-size:15px}
+.rule{height:1px;background:var(--line-soft);margin:clamp(30px,4vw,52px) 0}
+
+/* ===== 能力条（发丝线列表，非卡片网格） ===== */
+.caps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--line-soft)}
+.cap{padding:26px 0 26px;border-bottom:1px solid var(--line-soft);padding-right:clamp(16px,3vw,48px);display:grid;grid-template-columns:34px minmax(0,1fr);gap:16px}
+.cap:nth-child(odd){padding-right:clamp(16px,3vw,48px);border-right:1px solid var(--line-soft);margin-right:clamp(16px,3vw,48px)}
+.cap .k{font-family:var(--mono);font-size:13px;color:var(--accent);padding-top:3px}
+.cap h3{font-size:16.5px;font-weight:500;letter-spacing:.01em}
+.cap p{color:var(--ink-dim);font-size:13.8px;line-height:1.75;margin-top:7px}
+
+/* ===== 界面长廊 ===== */
+.strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:clamp(24px,3vw,40px)}
+.strip figure{position:relative;overflow:hidden;border:1px solid var(--line);background:#0A0F0C}
+.strip img{width:100%;display:block;aspect-ratio:16/10;object-fit:cover;object-position:top left;filter:saturate(.96) contrast(1.02);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.strip figure:hover img{transform:scale(1.035)}
+.strip figcaption{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 11px;font-size:12.5px;
+  background:linear-gradient(to top,rgba(7,11,9,.94),rgba(7,11,9,0));color:#DDE5DC}
+.strip figcaption b{display:block;font-size:13px;font-weight:500;color:#fff;letter-spacing:.01em}
+.strip figcaption span{color:#9FAD9F;font-size:11.5px;font-family:var(--mono)}
+
+/* ===== 玻璃特性（不对称两栏） ===== */
+.glass-row{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr);gap:clamp(22px,3.4vw,54px);align-items:start;margin-top:clamp(28px,4vw,52px)}
+.glass-card{position:relative;border:1px solid var(--line);background:
+  linear-gradient(150deg,rgba(255,255,255,.075),rgba(255,255,255,.02) 42%,rgba(255,255,255,.045));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:clamp(22px,3vw,34px);overflow:hidden}
+.glass-card:before{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(90% 60% at 8% 0%,rgba(255,255,255,.16),transparent 60%);mix-blend-mode:screen}
+.glass-card h3{font-size:19px;font-weight:500;position:relative}
+.glass-card .desc{color:var(--ink-dim);font-size:14px;margin-top:10px;max-width:34em;position:relative}
+.glass-demo{position:relative;margin-top:26px;display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px}
+.gd-side{display:flex;flex-direction:column;gap:7px}
+.gd-side span{height:26px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.09);font-size:11px;color:#CFD9D0;display:flex;align-items:center;padding-left:8px;font-family:var(--mono)}
+.gd-side span.on{background:rgba(217,160,91,.26);border-color:rgba(217,160,91,.5);color:#FBE7CE}
+.gd-body{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);padding:14px;display:flex;flex-direction:column;gap:9px}
+.gd-line{height:9px;background:rgba(255,255,255,.13)}
+.gd-line.s{width:58%}
+.gd-btn{height:32px;margin-top:6px;background:rgba(94,143,118,.55);border:1px solid rgba(160,210,180,.4);display:flex;align-items:center;justify-content:center;font-size:12px;color:#EAF6EC;font-family:var(--mono)}
+.slider{display:flex;align-items:center;gap:10px;margin-top:20px;font-family:var(--mono);font-size:11.5px;color:var(--ink-dim)}
+.slider input{flex:1;accent-color:var(--accent)}
+.spec-list{display:flex;flex-direction:column}
+.spec{padding:16px 0;border-bottom:1px solid var(--line-soft);display:flex;gap:14px;align-items:baseline}
+.spec:first-child{border-top:1px solid var(--line-soft)}
+.spec .n{font-family:var(--mono);font-size:12px;color:var(--green);min-width:56px}
+.spec div b{font-weight:500;font-size:14.5px;display:block}
+.spec div span{color:var(--ink-dim);font-size:13px}
+
+/* ===== 下载 ===== */
+.dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:clamp(26px,3vw,40px)}
+.dl a{background:var(--bg);padding:24px 22px 26px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:6px;transition:background .2s}
+.dl a:hover{background:#121B16}
+.dl .os{font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.03em}
+.dl .nm{font-size:17px;font-weight:500;margin-top:4px}
+.dl .meta{color:var(--ink-dim);font-size:12.5px;font-family:var(--mono)}
+.dl .go{margin-top:14px;font-size:13px;color:var(--accent)}
+.dl .go:after{content:" ↗";font-family:var(--mono)}
+.note{margin-top:18px;color:var(--ink-dim);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 26px}
+.note b{color:var(--ink);font-weight:500}
+
+/* ===== 更新日志 时间轴 ===== */
+.tl{display:grid;grid-template-columns:96px 1px minmax(0,1fr);margin-top:clamp(26px,3vw,40px)}
+.tl-time{font-family:var(--mono);font-size:12.5px;color:var(--ink-dim);padding:22px 18px 22px 0}
+.tl-rule{background:var(--line-soft);position:relative}
+.tl-rule i{position:absolute;left:-3.5px;top:26px;width:8px;height:8px;background:var(--accent)}
+.tl-body{padding:20px 0 22px 22px;border-bottom:1px solid var(--line-soft)}
+.tl-body h3{font-size:16px;font-weight:500;display:flex;align-items:center;gap:10px}
+.tag{font-family:var(--mono);font-size:11px;color:var(--accent);border:1px solid rgba(217,160,91,.42);padding:1px 7px}
+.tl-body ul{margin-top:10px;padding-left:0;list-style:none;color:var(--ink-dim);font-size:13.6px;line-height:1.9}
+.tl-body li:before{content:"—";color:var(--green);margin-right:10px}
+
+/* ===== FAQ ===== */
+.faq{margin-top:clamp(22px,3vw,36px);border-top:1px solid var(--line-soft)}
+details{border-bottom:1px solid var(--line-soft)}
+summary{cursor:pointer;list-style:none;padding:20px 2px;font-size:15.5px;display:flex;align-items:center;gap:14px}
+summary::-webkit-details-marker{display:none}
+summary .q{font-family:var(--mono);color:var(--accent);font-size:12px;min-width:26px}
+summary .plus{margin-left:auto;color:var(--ink-dim);font-size:18px;line-height:1;transition:transform .2s}
+details[open] summary .plus{transform:rotate(45deg)}
+details p{color:var(--ink-dim);font-size:13.8px;line-height:1.85;padding:0 0 20px 40px;max-width:52em}
+
+/* ===== 结尾 ===== */
+.foot{max-width:1440px;margin:0 auto;padding:0 var(--pad)}
+.foot-cta{border:1px solid var(--line);background:
+  linear-gradient(120deg,rgba(217,160,91,.12),rgba(94,143,118,.10));padding:clamp(30px,4.6vw,58px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:26px;align-items:center}
+.foot-cta h2{font-size:clamp(22px,2.4vw,30px);font-weight:700;line-height:1.35}
+.foot-cta p{color:var(--ink-dim);font-size:14px;margin-top:10px}
+footer{border-top:1px solid var(--line-soft);margin-top:clamp(50px,7vw,90px);padding:34px 0 44px}
+.foot-row{max-width:1440px;margin:0 auto;padding:0 var(--pad);display:flex;flex-wrap:wrap;gap:16px 44px;align-items:center;color:var(--ink-dim);font-size:12.5px;font-family:var(--mono)}
+.foot-row a{color:var(--ink-dim);text-decoration:none}
+.foot-row a:hover{color:var(--ink)}
+.foot-row .sp{margin-left:auto}
+
+/* ===== 响应式 ===== */
+@media (max-width:1080px){
+  .hero-grid{grid-template-columns:1fr;gap:38px}
+  .strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .glass-row{grid-template-columns:1fr}
+  .navlinks{display:none}
+}
+@media (max-width:720px){
+  .caps{grid-template-columns:1fr}
+  .cap:nth-child(odd){border-right:none;margin-right:0;padding-right:0}
+  .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dl{grid-template-columns:1fr}
+  .facts{flex-wrap:wrap;gap:18px 28px}
+  .foot-cta{grid-template-columns:1fr}
+  .tl{grid-template-columns:70px 1px minmax(0,1fr)}
+  .nav-cta .tag{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .strip img{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="grid-layer" aria-hidden="true"></div>
+<div class="glow" aria-hidden="true"></div>
+
+<div class="wrap">
+<header>
+  <nav class="nav">
+    <a class="brand" href="#top">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="none"/><rect x="5" y="6" width="7" height="7" fill="#D9A05B"/><rect x="14" y="12" width="6" height="6" fill="#5E8F76"/><rect x="20" y="18" width="7" height="7" fill="#D9A05B"/><rect x="8" y="20" width="5" height="5" fill="#5E8F76"/></svg>
+      NovaLauncher
+    </a>
+    <div class="navlinks">
+      <a href="#caps">能力</a>
+      <a href="#look">界面</a>
+      <a href="#download">下载</a>
+      <a href="#log">更新日志</a>
+      <a href="#faq">常见问题</a>
+    </div>
+    <div class="nav-cta">
+      <span class="tag">v3.2.2</span>
+      <a class="btn primary" href="#download">下载客户端</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+<!-- ===== Hero ===== -->
+<div class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow"><i></i>开源 · 跨平台 · 自带模组管理</div>
+      <h1>把整个方块世界，<br>收进<em>一个窗口</em>。</h1>
+      <p class="lede">NovaLauncher 是一款自研的 Minecraft 第三方启动器。它把版本安装、模组依赖、存档备份、Java 运行时和崩溃分析收进同一套流程，Windows、macOS、Android 用同一份代码，下载完就能开局。</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#download">选择你的平台</a>
+        <a class="btn" href="https://github.com/xiaojiang269/NovaLauncher" target="_blank" rel="noopener">查看源码仓库</a>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>4</b><span>模组加载器</span></div>
+        <div class="fact"><b>3</b><span>登录方式</span></div>
+        <div class="fact"><b>3</b><span>桌面 / 移动平台</span></div>
+        <div class="fact"><b>1.4 MB</b><span>安卓安装包体积</span></div>
+      </div>
+    </div>
+    <div class="shot-frame">
+      <img src="assets/desk-home.jpg" alt="NovaLauncher 桌面版主界面：账户卡片、启动配置与启动按钮" width="1600" height="915">
+      <div class="cap">桌面版 3.2.2 / 主界面</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 能力 ===== -->
+<section id="caps">
+  <div class="inner">
+    <div class="sect-head">
+      <h2>它替你处理掉的那些麻烦</h2>
+      <p>不是把官网下载地址换个皮，而是把每次启动前真正会卡住人的环节做进了流程里。</p>
+    </div>
+    <div class="caps">
+      <div class="cap"><div class="k">01</div><div>
+        <h3>三种登录，离线也能玩</h3>
+        <p>离线用户名、微软账号、外置登录（authlib-injector）在同一张卡片里切换，切换后自动带出对应皮肤与用户名，不用记 API 地址。</p>
+      </div></div>
+      <div class="cap"><div class="k">02</div><div>
+        <h3>Forge / Fabric / Quilt / NeoForge</h3>
+        <p>安装弹窗里直接选加载器与游戏版本，自动匹配对应加载器版本号，下载完写入版本库即可启动，不必手搓 JSON。</p>
+      </div></div>
+      <div class="cap"><div class="k">03</div><div>
+        <h3>模组冲突检测与依赖排序</h3>
+        <p>导入 mods 后扫描前置依赖、重复模组与版本冲突，按依赖关系排序提示从未加载的那一个，而不是丢一句"游戏崩了"。</p>
+      </div></div>
+      <div class="cap"><div class="k">04</div><div>
+        <h3>存档导入、导出与备份</h3>
+        <p>直接把 world 文件夹拖进来即可导入；一键导出为 zip 分享给朋友，启动前自动留一份备份，玩坏了能回滚到上一次。</p>
+      </div></div>
+      <div class="cap"><div class="k">05</div><div>
+        <h3>崩溃自动分析</h3>
+        <p>读取 latest.log 与 crash-report，定位到具体模组、缺失依赖或内存不足，并给出可执行的修复建议，而不是让玩家自己翻日志。</p>
+      </div></div>
+      <div class="cap"><div class="k">06</div><div>
+        <h3>自动更新，静默替换</h3>
+        <p>启动时比对 GitHub 发布的最新版本，只下载与本机架构匹配的完整包，校验后替换自身，下次打开就是新版。</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 界面长廊 ===== -->
+<section id="look">
+  <div class="inner">
+    <div class="sect-head">
+      <h2>界面不是贴上去的皮肤</h2>
+      <p>每个页面都为一件具体的事服务：找到版本、看清模组、调好参数、确认能进游戏。</p>
+    </div>
+    <div class="strip">
+      <figure><img src="assets/desk-home.jpg" alt="主界面"><figcaption><b>主页</b><span>账户 · 启动配置</span></figcaption></figure>
+      <figure><img src="assets/desk-ver.jpg" alt="版本库界面"><figcaption><b>版本库</b><span>安装 · 隔离 · 加载器</span></figcaption></figure>
+      <figure><img src="assets/desk-mod.jpg" alt="模组界面"><figcaption><b>模组</b><span>搜索 · 启用 · 冲突</span></figcaption></figure>
+      <figure><img src="assets/desk-set.jpg" alt="设置界面"><figcaption><b>设置</b><span>Java · 内存 · 外观</span></figcaption></figure>
+      <figure><img src="assets/desk-more.jpg" alt="更多界面"><figcaption><b>更多</b><span>今日人品 · 彩蛋</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 液态玻璃与参数 ===== -->
+<section>
+  <div class="inner">
+    <div class="sect-head">
+      <h2>背景是你的世界，界面让开</h2>
+      <p>启动器整层铺一张方块世界的高清背景，侧边栏与内容区做成半透明毛玻璃。透明度、深色导航、液态玻璃都能在设置里单独调，调到你自己眼睛舒服为止。</p>
+    </div>
+    <div class="glass-row">
+      <div class="glass-card">
+        <h3>液态玻璃模式</h3>
+        <p class="desc">开启后，面板边缘出现折射高光、内部带轻微透镜位移，像 iOS 上的玻璃控件。拖动下面的滑块，背景透出程度会实时变化。</p>
+        <div class="glass-demo">
+          <div class="gd-side"><span class="on">主页</span><span>版本库</span><span>模组</span><span>设置</span></div>
+          <div class="gd-body" id="gdBody">
+            <div class="gd-line"></div>
+            <div class="gd-line s"></div>
+            <div class="gd-line"></div>
+            <div class="gd-btn">启动游戏</div>
+          </div>
+        </div>
+        <div class="slider">
+          <span>背景透明度</span>
+          <input type="range" min="20" max="100" value="70" id="alphaRange" aria-label="背景透明度">
+          <span id="alphaVal">70%</span>
+        </div>
+      </div>
+      <div>
+        <div class="spec-list">
+          <div class="spec"><span class="n">JAVA</span><div><b>自动探测已安装的 Java，也能指定路径</b><span>列出 jdk-8 / 17 / 21 并按版本自动选择，缺运行时会提示下载补全。</span></div></div>
+          <div class="spec"><span class="n">内存</span><div><b>最小与最大内存分开设</b><span>按机器内存推荐区间，避免最大堆给太满导致的卡顿与崩档。</span></div></div>
+          <div class="spec"><span class="n">隔离</span><div><b>版本隔离，互不污染</b><span>每个实例独立 mods / saves / configs，1.20.1 与 26.3 各玩各的。</span></div></div>
+          <div class="spec"><span class="n">动画</span><div><b>启动动画与切换动画</b><span>进入游戏前的加载序列、页面之间的切换过渡，都能单独关掉。</span></div></div>
+          <div class="spec"><span class="n">启动</span><div><b>启动日志就贴在按钮上方</b><span>进度、下载项、报错一行行滚动，卡在哪一步一眼看到。</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 下载 ===== -->
+<section id="download">
+  <div class="inner">
+    <div class="sect-head">
+      <h2>四个安装包，按你手上的机器选</h2>
+      <p>桌面版是自包含压缩包，解压即用、不需要安装 .NET；手机版是原生 APK 安装包，包内自带整套界面，断网也能启动。</p>
+    </div>
+    <div class="dl">
+      <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.2/NovaLauncher-v3.2.2-Windows-x64.zip" target="_blank" rel="noopener">
+        <span class="os">WINDOWS</span>
+        <span class="nm">Windows x64</span>
+        <span class="meta">v3.2.2 · zip</span>
+        <span class="go">下载</span>
+      </a>
+      <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.2/NovaLauncher-v3.2.2-macOS-arm64.app.zip" target="_blank" rel="noopener">
+        <span class="os">MACOS · APPLE SILICON</span>
+        <span class="nm">Apple 芯片</span>
+        <span class="meta">v3.2.2 · app.zip</span>
+        <span class="go">下载</span>
+      </a>
+      <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.2/NovaLauncher-v3.2.2-macOS-x64.app.zip" target="_blank" rel="noopener">
+        <span class="os">MACOS · INTEL</span>
+        <span class="nm">Intel 芯片</span>
+        <span class="meta">v3.2.2 · app.zip</span>
+        <span class="go">下载</span>
+      </a>
+      <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.2/NovaLauncher-Mobile-3.3.1-landscape.apk" target="_blank" rel="noopener">
+        <span class="os">ANDROID · 横屏</span>
+        <span class="nm">手机版 横屏</span>
+        <span class="meta">v3.3.1 · apk · 1.4 MB</span>
+        <span class="go">下载</span>
+      </a>
+    </div>
+    <div class="note">
+      <span><b>竖屏安装包</b> <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.2/NovaLauncher-Mobile-3.3.1-portrait.apk" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">GitHub</a> · <a href="https://wwbss.lanzoum.com/iz7lx4gbux9e" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">蓝奏云 提取码 ncl2</a></span>
+      <span><b>横屏备用链</b> <a href="https://wwbss.lanzoum.com/iriQ24gbuuuh" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">蓝奏云 提取码 ncl2</a></span>
+      <span><b>网页版</b> <a href="https://xiaojiang269.github.io/NovaLauncher/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">免安装直接试用</a></span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 更新日志 ===== -->
+<section id="log">
+  <div class="inner">
+    <div class="sect-head">
+      <h2>更新日志</h2>
+      <p>启动器每 24 小时检查一次发布，桌面版只下载与自身架构匹配的完整包。</p>
+    </div>
+    <div class="tl">
+      <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
+      <div class="tl-body">
+        <h3>手机版 3.3.1 <span class="tag">移动端</span></h3>
+        <ul>
+          <li>新增原生网络桥，修复包内检查更新被跨域拦截失败的问题</li>
+          <li>横屏 / 竖屏两个安装包，同签名可直接覆盖升级</li>
+          <li>界面整包内嵌，断网状态下同样可以进入启动页</li>
+        </ul>
+      </div>
+
+      <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
+      <div class="tl-body">
+        <h3>桌面版 3.2.2 <span class="tag">桌面端</span></h3>
+        <ul>
+          <li>自动更新改为架构感知，避免在 Apple 芯片上下到 Intel 包</li>
+          <li>模组搜索支持按加载器过滤，结果为空时给出原因提示</li>
+          <li>启动日志增加下载进度行，长时间无响应可看到具体卡点</li>
+        </ul>
+      </div>
+
+      <div class="tl-time">2026.10</div><div class="tl-rule"><i></i></div>
+      <div class="tl-body">
+        <h3>桌面版 3.2.1 <span class="tag">桌面端</span></h3>
+        <ul>
+          <li>液态玻璃模式上线，标题栏与侧边栏同步半透明</li>
+          <li>整层高清方块世界背景，透明度可在设置中调整</li>
+        </ul>
+      </div>
+
+      <div class="tl-time">2026.09</div><div class="tl-rule"><i></i></div>
+      <div class="tl-body">
+        <h3>桌面版 3.2.0 <span class="tag">桌面端</span></h3>
+        <ul>
+          <li>更多页面加入今日人品与「千万别点」，还原同类启动器的彩蛋</li>
+          <li>崩溃分析支持直接读出出错的模组文件名</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq">
+  <div class="inner">
+    <div class="sect-head">
+      <h2>常见问题</h2>
+      <p>遇到没写在这里的情况，去仓库开一个 issue，附上 latest.log 会快很多。</p>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary><span class="q">01</span>压缩包解压后打不开 / 被杀毒软件拦了<span class="plus">+</span></summary>
+        <p>桌面版是自包含程序，解压整个文件夹后双击里面的可执行文件即可，不要只把单个 exe 拖出来。程序没有签名证书，部分安全软件会先拦截，放行一次再把文件夹加进信任列表就好。如果提示缺少运行库，说明解压时被杀软删掉了目录里的依赖文件，重新解压一次并关闭实时防护。</p>
+      </details>
+      <details>
+        <summary><span class="q">02</span>手机版提示「应用未安装」或解析包出错<span class="plus">+</span></summary>
+        <p>先确认下的是横屏还是竖屏包，两者包名相同、签名相同，可以直接覆盖升级。如果之前装过其他来源的同名版本，需要先卸载。安卓 8.0 以下不支持，8.0 及以上都能装。</p>
+      </details>
+      <details>
+        <summary><span class="q">03</span>为什么模组搜不到<span class="plus">+</span></summary>
+        <p>模组检索走的是公开源，需要联网，并且要匹配当前选中版本的加载器（Forge 与 Fabric 的模组互不相通）。搜索无结果时先看版本是否选对，再看网络是否能访问外网。国内网络不稳时换用离线导入：把 jar 直接放进 mods 文件夹，启动器会扫描并做依赖排序。</p>
+      </details>
+      <details>
+        <summary><span class="q">04</span>检查更新报 github.com:443 连接失败<span class="plus">+</span></summary>
+        <p>这是访问 GitHub 发布页失败，通常是网络或 DNS 问题，和启动器本身无关。可以挂代理后重试，或者直接到发布页手动下载对应平台的完整包覆盖，配置与存档都在独立目录里，不会被覆盖。</p>
+      </details>
+      <details>
+        <summary><span class="q">05</span>会收集我的数据吗<span class="plus">+</span></summary>
+        <p>不会。启动器不发送遥测，账号凭据只保存在本地。网络请求只有三类：游戏与加载器文件下载、模组信息检索、版本更新检查。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 结尾 ===== -->
+<div class="foot">
+  <div class="foot-cta">
+    <div>
+      <h2>下一步是双击那个图标</h2>
+      <p>下载对应平台的压缩包或安装包，解压、打开、选版本，然后进游戏。</p>
+    </div>
+    <a class="btn primary" href="#download" style="padding:14px 24px;font-size:15px">回到下载</a>
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="foot-row">
+    <span>NovaLauncher v3.2.2 / Mobile 3.3.1</span>
+    <a href="https://github.com/xiaojiang269/NovaLauncher" target="_blank" rel="noopener">源码</a>
+    <a href="https://github.com/xiaojiang269/NovaLauncher/releases" target="_blank" rel="noopener">全部发布</a>
+    <a href="https://github.com/xiaojiang269/NovaLauncher/issues" target="_blank" rel="noopener">反馈</a>
+    <span class="sp">Minecraft 为 Mojang Studios 商标，本项目与其无隶属关系。</span>
+  </div>
+</footer>
+</div>
+
+<script>
+// 透明度滑块：实时改变演示面板的玻璃强度
+(function(){
+  var r=document.getElementById('alphaRange');
+  var v=document.getElementById('alphaVal');
+  var body=document.getElementById('gdBody');
+  if(!r||!v||!body) return;
+  function apply(){
+    var a=Number(r.value);
+    v.textContent=a+'%';
+    body.style.background='rgba(255,255,255,'+(a/100*0.16+0.02).toFixed(3)+')';
+    body.style.backdropFilter='blur('+(18+a/100*10).toFixed(1)+'px)';
+    body.style.webkitBackdropFilter=body.style.backdropFilter;
+  }
+  r.addEventListener('input',apply);
+  apply();
+})();
+
+// 导航点击：滚动时保持 sticky 不遮住标题
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener('click',function(e){
+    var id=a.getAttribute('href');
+    if(id.length<2) return;
+    var t=document.querySelector(id);
+    if(!t) return;
+    e.preventDefault();
+    var y=t.getBoundingClientRect().top+window.pageYOffset-72;
+    window.scrollTo({top:y,behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
