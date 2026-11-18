@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>触屏输入层预览</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;overflow:hidden;font-family:"Noto Sans SC",system-ui,sans-serif}
+canvas{display:block;width:100vw;height:100vh}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const cvs=document.getElementById('c'), ctx=cvs.getContext('2d');
+let W=0,H=0,DPR=Math.min(2,window.devicePixelRatio||1);
+function resize(){
+  W=cvs.clientWidth; H=cvs.clientHeight;
+  cvs.width=W*DPR; cvs.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize',resize);
+
+// 与 GameActivity.WorldView 同一套布局参数
+const S={yaw:32,pitch:8,camX:0,camZ:0,bob:0.6,stick:{x:-0.32,y:-0.55,active:true},
+         jump:true,sneak:false,attack:false,use:false,sprint:false,sel:0,panel:false};
+
+const ITEMS=['#9BBF6A','#8C6239','#3B6E8F','#C9C3B4','#9BBF6A','#8C6239','#3B6E8F','#B0563C','#D8D2C0'];
+const BTN=['跳跃','潜行','攻击','使用','疾跑','设置'];
+const COL=[0x9BBF6A,0x8C6239,0x3B6E8F,0xC9C3B4];
+
+function shade(hex,f){
+  let r=(hex>>16)&255,g=(hex>>8)&255,b=hex&255;
+  r=Math.max(0,Math.min(255,Math.round(r*(1+f))));
+  g=Math.max(0,Math.min(255,Math.round(g*(1+f))));
+  b=Math.max(0,Math.min(255,Math.round(b*(1+f))));
+  return `rgb(${r},${g},${b})`;
+}
+function hash(x,y){let h=x*374761393+y*668265263;h=(h^(h>>13))*1274126177;return h^(h>>16);}
+
+resize();
+const horizonY=()=>H*0.42;
+function draw(){
+  const hz=horizonY();
+  // 天空
+  const g=ctx.createLinearGradient(0,hz-H*0.5,0,hz+20);
+  g.addColorStop(0,'#101820');g.addColorStop(.55,'#4A6C82');g.addColorStop(1,'#C9A780');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,hz+40);
+  // 太阳
+  ctx.fillStyle='rgba(255,240,208,0.22)';ctx.beginPath();ctx.arc(W*0.72,hz-H*0.28,H*0.16,0,7);ctx.fill();
+  ctx.fillStyle='#FFF3DC';ctx.beginPath();ctx.arc(W*0.72,hz-H*0.28,H*0.055,0,7);ctx.fill();
+
+  // 方块地形
+  for(let d=15;d>=0;d--){
+    const scale=16-d, bw=8+scale*5.2;
+    const rowY=hz+10+(16-d)*(16-d)*2.1-(S.pitch*Math.PI/180)*90;
+    const count=Math.ceil(W/bw)+4;
+    const startBlock=S.camZ-d-2;
+    const shift=-(((S.camX+startBlock)*bw*0.55)%bw)-(S.yaw/62)*bw*0.9;
+    for(let i=0;i<count;i++){
+      const bx=Math.round(S.camX+i-count/2+startBlock);
+      const hh=hash(bx,Math.round(startBlock))&7;
+      let base= hh===0?0xC9C3B4: hh===1?0x3B6E8F: 0x9BBF6A;
+      const x=shift+i*bw, bh=bw*(0.55+((hash(bx,Math.round(startBlock))&3))*0.12);
+      ctx.fillStyle=shade(base,0);ctx.fillRect(x,rowY-bh,bw*0.96,bh);
+      ctx.fillStyle=shade(base,0.22);ctx.fillRect(x,rowY-bh,bw*0.96,bh*0.18);
+      ctx.fillStyle=shade(base,-0.28);ctx.fillRect(x,rowY-bh*0.16,bw*0.96,bh*0.16);
+    }
+  }
+  // 地平线雾
+  const fog=ctx.createLinearGradient(0,hz-6,0,hz+H*0.12);
+  fog.addColorStop(0,'rgba(201,167,128,0)');fog.addColorStop(.4,'rgba(201,167,128,.4)');fog.addColorStop(1,'rgba(201,167,128,0)');
+  ctx.fillStyle=fog;ctx.fillRect(0,hz-6,W,H*0.12);
+
+  // 准星
+  ctx.fillStyle='rgba(255,255,255,.8)';
+  ctx.fillRect(W/2-1.5,H/2-12,3,24);ctx.fillRect(W/2-12,H/2-1.5,24,3);
+
+  // 快捷栏
+  const bs=Math.min(W,H)*0.115, gap=bs*0.16;
+  const hbW=Math.min(W*0.52,9*(bs*0.62)+8*6), hbH=bs*0.62;
+  const hb={l:W/2-hbW/2,t:H-hbH-H*0.028,w:hbW,h:hbH};
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(hb.l,hb.t,hb.w,hb.h);
+  const slot=hb.w/9;
+  for(let i=0;i<9;i++){
+    const r={l:hb.l+i*slot+4,t:hb.t+4,w:slot-8,h:hb.h-8};
+    ctx.fillStyle='rgba(0,0,0,.38)';ctx.fillRect(r.l,r.t,r.w,r.h);
+    const inset=r.w*0.16;
+    ctx.fillStyle=ITEMS[i];ctx.fillRect(r.l+inset,r.t+inset,r.w-inset*2,r.h-inset*2);
+    ctx.strokeStyle=i===S.sel?'#fff':'rgba(255,255,255,.4)';
+    ctx.lineWidth=i===S.sel?3.2:1.2;ctx.strokeRect(r.l,r.t,r.w,r.h);
+  }
+
+  // 摇杆
+  const R=Math.min(W*0.16,H*0.20), cx=W*0.20, cy=H-R-H*0.06;
+  ctx.fillStyle='rgba(255,255,255,.34)';ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.64)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,R*0.52,0,7);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.85)';
+  ctx.beginPath();ctx.arc(cx+S.stick.x*R*0.62,cy+S.stick.y*R*0.62,R*0.34,0,7);ctx.fill();
+
+  // 按钮 2 列 3 行
+  const bx=W-bs-W*0.035, by=H-bs-H*0.055;
+  const xs=[bx,bx-bs-gap], ys=[by,by-bs-gap,by-(bs+gap)*2];
+  let k=0;
+  const st=[S.jump,S.sneak,S.attack,S.use,S.sprint,false];
+  for(let row=0;row<3;row++)for(let col=0;col<2;col++){
+    if(k>=6) continue;
+    const x=xs[col], y=ys[row], on=st[k];
+    ctx.fillStyle=on?'rgba(255,217,160,.9)':'rgba(255,255,255,.28)';
+    roundRect(x,y,bs,bs,10);ctx.fill();
+    ctx.strokeStyle=on?'#fff':'rgba(255,255,255,.4)';ctx.lineWidth=1.6;roundRect(x,y,bs,bs,10);ctx.stroke();
+    ctx.fillStyle=on?'#1A1206':'#fff';
+    ctx.font=`500 ${bs*0.34}px "Noto Sans SC",sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(BTN[k],x+bs/2,y+bs/2);
+    k++;
+  }
+
+  // 状态行
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.font=`600 ${Math.min(W,H)*0.030}px "Noto Sans SC",sans-serif`;
+  ctx.fillStyle='#fff';
+  ctx.fillText(`X ${S.camX.toFixed(1)}   Z ${S.camZ.toFixed(1)}   YAW ${S.yaw.toFixed(0)}°   PITCH ${S.pitch.toFixed(0)}°`,W*0.03,H*0.055);
+  ctx.font=`400 ${Math.min(W,H)*0.022}px "Noto Sans SC",sans-serif`;
+  ctx.fillStyle='rgba(255,255,255,.8)';
+  ctx.fillText(`摇杆 ${S.stick.x.toFixed(2)} / ${S.stick.y.toFixed(2)}   跳跃 ${S.jump?'按下':'松开'}   潜行 ${S.sneak?'按下':'松开'}   攻击 ${S.attack?'按下':'松开'}   ${S.sel+1} 号槽`,W*0.03,H*0.055+Math.min(W,H)*0.032);
+
+  ctx.textAlign='right';
+  ctx.font=`400 ${Math.min(W,H)*0.020}px "Noto Sans SC",sans-serif`;
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.fillText('输入层自检 · 拖动左侧圆盘移动，右侧滑动转视角',W*0.97,H*0.045);
+}
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+draw();
+</script>
+</body></html>

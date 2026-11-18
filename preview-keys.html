@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>PC 键位布局预览</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;background:#000;overflow:hidden}
+canvas{position:fixed;inset:0;display:block;width:100vw;height:100vh}</style></head>
+<body><canvas id="c"></canvas>
+<script>
+const cvs=document.getElementById('c'),ctx=cvs.getContext('2d');
+let W,H,DPR=Math.min(2,devicePixelRatio||1);
+function resize(){W=innerWidth;H=innerHeight;cvs.width=W*DPR;cvs.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);draw();}
+addEventListener('resize',resize);
+
+const S={yaw:32,pitch:8,camX:0,camZ:0,bob:0.8,sel:0,pressed:['W','SPACE']};
+const ITEMS=['#9BBF6A','#8C6239','#3B6E8F','#C9C3B4','#9BBF6A','#8C6239','#3B6E8F','#B0563C','#D8D2C0'];
+const B=(c,f)=>{let r=(c>>16)&255,g=(c>>8)&255,b=c&255;r=Math.round(r*(1+f));g=Math.round(g*(1+f));b=Math.round(b*(1+f));return `rgb(${Math.max(0,Math.min(255,r))},${Math.max(0,Math.min(255,g))},${Math.max(0,Math.min(255,b))})`};
+const hash=(x,y)=>{let h=x*374761393+y*668265263;h=(h^(h>>13))*1274126177;return h^(h>>16)};
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+
+let DRAWN=[];
+function draw(){
+  DRAWN=[];
+  const u=Math.min(W,H), hz=H*0.42, top=H*0.115, bs=u*0.075;
+  // 天空
+  const sky=ctx.createLinearGradient(0,hz-H*0.65,0,hz+20);
+  sky.addColorStop(0,'#7FB6E3');sky.addColorStop(.6,'#9BC9E8');sky.addColorStop(1,'#CDE4F2');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,hz+40);
+  ctx.fillStyle='#6D8F4C';ctx.fillRect(0,hz+H*0.05,W,H);
+  // 地形
+  for(let d=15;d>=0;d--){
+    const scale=16-d,bw=8+scale*5.2;
+    const rowY=hz+10+(16-d)*(16-d)*2.1-(S.pitch*Math.PI/180)*90;
+    const count=Math.ceil(W/bw)+4, startBlock=S.camZ-d-2;
+    const shift=-(((S.camX+startBlock)*bw*0.55)%bw)-(S.yaw/62)*bw*0.9;
+    for(let i=0;i<count;i++){
+      const bx=Math.round(S.camX+i-count/2+startBlock), hs=hash(bx,Math.round(startBlock))&7;
+      const base=hs===0?0xC9C3B4:hs===1?0x3B6E8F:0x9BBF6A;
+      const x=shift+i*bw, bh=bw*(0.55+((hash(bx,Math.round(startBlock))&3))*0.12);
+      ctx.fillStyle=B(base,0);ctx.fillRect(x,rowY-bh,bw*0.96,bh);
+      ctx.fillStyle=B(base,0.22);ctx.fillRect(x,rowY-bh,bw*0.96,bh*0.18);
+      ctx.fillStyle=B(base,-0.30);ctx.fillRect(x,rowY-bh*0.16,bw*0.96,bh*0.16);
+    }
+  }
+  const fog=ctx.createLinearGradient(0,hz-6,0,hz+H*0.12);
+  fog.addColorStop(0,'rgba(205,228,242,0)');fog.addColorStop(.45,'rgba(205,228,242,.35)');fog.addColorStop(1,'rgba(205,228,242,0)');
+  ctx.fillStyle=fog;ctx.fillRect(0,hz-6,W,H*0.12);
+  // 准星
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.fillRect(W/2-1.4,H/2-u*0.022,2.8,u*0.044);ctx.fillRect(W/2-u*0.022,H/2-1.4,u*0.044,2.8);
+
+  // 快捷栏
+  const hbH=u*0.070, hbW=Math.min(W*0.42,hbH*9.6);
+  const hb={l:W/2-hbW/2,t:H-hbH-H*0.045,w:hbW,h:hbH};
+  ctx.fillStyle='rgba(0,0,0,.46)';ctx.fillRect(hb.l,hb.t,hb.w,hb.h);
+  const slot=hb.w/9;
+  for(let i=0;i<9;i++){
+    const r={l:hb.l+i*slot+3,t:hb.t+3,w:slot-6,h:hb.h-6};
+    ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(r.l,r.t,r.w,r.h);
+    const inset=r.w*0.17;ctx.fillStyle=ITEMS[i];ctx.fillRect(r.l+inset,r.t+inset,r.w-inset*2,r.h-inset*2);
+    ctx.strokeStyle=i===S.sel?'#fff':'rgba(255,255,255,.33)';ctx.lineWidth=i===S.sel?3:1.1;ctx.strokeRect(r.l,r.t,r.w,r.h);
+  }
+  const is=u*0.028, hy=hb.t-is*1.15;
+  for(let i=0;i<10;i++){const x=hb.l+i*(is*1.02);
+    ctx.fillStyle='#6B2B2B';ctx.fillRect(x,hy,is*0.84,is*0.78);
+    ctx.fillStyle='#E04A46';ctx.fillRect(x,hy,is*0.84,is*0.32);}
+  for(let i=0;i<10;i++){const x=hb.l+hb.w-(i+1)*(is*1.02);
+    ctx.fillStyle='#6A5124';ctx.fillRect(x,hy,is*0.84,is*0.78);
+    ctx.fillStyle='#C79A45';ctx.fillRect(x,hy,is*0.84,is*0.32);}
+
+  // 顶部键
+  const key=(label,cx,cy,w,h,on)=>{
+    ctx.fillStyle=on?'rgba(255,217,160,.9)':'rgba(0,0,0,.46)';rr(cx-w/2,cy-h/2,w,h,8);ctx.fill();
+    ctx.strokeStyle=on?'#fff':'rgba(255,255,255,.5)';ctx.lineWidth=1.5;rr(cx-w/2,cy-h/2,w,h,8);ctx.stroke();
+    ctx.fillStyle=on?'#1A1206':'#F2FFFFFF';
+    ctx.font=`700 ${Math.max(u*0.017,Math.min(h*0.40,w*0.30))}px "Noto Sans SC",sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,cx,cy);
+    DRAWN.push({x:cx-w/2,y:cy-h/2,w:w,h:h});
+  };
+  key('Esc',W*0.030+bs/2,top,bs,bs,false);
+  key('F3',W*0.030+bs*2,top,bs,bs,false);
+  key('T',W*0.030+bs*3,top,bs,bs,false);
+  key('Input',W*0.290,top,bs*1.9,bs,false);
+  key('Enter',W*0.390,top,bs*1.6,bs,false);
+  key('BackSp',W*0.480,top,bs*1.9,bs,false);
+  // 光标键
+  ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.arc(W*0.955,top,bs*0.45,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(W*0.955,top,bs*0.45,0,7);ctx.stroke();
+  ctx.fillStyle='#fff';rr(W*0.955-bs*0.12,top-bs*0.30,bs*0.24,bs*0.60,bs*0.07);ctx.fill();
+
+  // WASD 八向
+  const pcx=W*0.115,pcy=H*0.66,rad=u*0.115,as=u*0.070;
+  const arrow=(cx,cy,dir,size,on)=>{
+    ctx.beginPath();const s=size/2;
+    if(dir===0){ctx.moveTo(cx,cy-s);ctx.lineTo(cx+s,cy+s*0.8);ctx.lineTo(cx-s,cy+s*0.8);}
+    if(dir===1){ctx.moveTo(cx,cy+s);ctx.lineTo(cx+s,cy-s*0.8);ctx.lineTo(cx-s,cy-s*0.8);}
+    if(dir===2){ctx.moveTo(cx-s,cy);ctx.lineTo(cx+s*0.8,cy+s);ctx.lineTo(cx+s*0.8,cy-s);}
+    if(dir===3){ctx.moveTo(cx+s,cy);ctx.lineTo(cx-s*0.8,cy+s);ctx.lineTo(cx-s*0.8,cy-s);}
+    ctx.closePath();
+    ctx.fillStyle=on?'rgba(255,217,160,.9)':'rgba(255,255,255,.4)';ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.2;ctx.stroke();
+    DRAWN.push({x:cx-size/2,y:cy-size/2,w:size,h:size});
+  };
+  arrow(pcx,pcy-rad,0,as,S.pressed.includes('W'));
+  arrow(pcx,pcy+rad,1,as,S.pressed.includes('S'));
+  arrow(pcx-rad,pcy,2,as,S.pressed.includes('A'));
+  arrow(pcx+rad,pcy,3,as,S.pressed.includes('D'));
+  const dd=rad*0.70,ds=as*0.46;
+  arrow(pcx+dd,pcy-dd,0,ds,false);arrow(pcx-dd,pcy-dd,0,ds,false);
+  arrow(pcx+dd,pcy+dd,1,ds,false);arrow(pcx-dd,pcy+dd,1,ds,false);
+
+  // 右侧动作区
+  const multi=(label,cx,cy,w,h,on)=>{
+    ctx.fillStyle=on?'rgba(255,217,160,.9)':'rgba(0,0,0,.46)';rr(cx-w/2,cy-h/2,w,h,8);ctx.fill();
+    ctx.strokeStyle=on?'#fff':'rgba(255,255,255,.5)';ctx.lineWidth=1.5;rr(cx-w/2,cy-h/2,w,h,8);ctx.stroke();
+    ctx.fillStyle=on?'#1A1206':'#F2FFFFFF';
+    const lines=label.split('\n'),fs=Math.max(u*0.017,Math.min(h*0.34,w*0.26));
+    ctx.font=`700 ${fs}px "Noto Sans SC",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    const tot=lines.length*fs*1.12,y0=cy-tot/2+fs*0.56;
+    lines.forEach((l,i)=>ctx.fillText(l,cx,y0+i*fs*1.12));
+    DRAWN.push({x:cx-w/2,y:cy-h/2,w:w,h:h});
+  };
+  multi('跳跃\nSpace',W*0.845,H*0.62,bs*1.75,bs*1.30,S.pressed.includes('SPACE'));
+  multi('攻击\nLMB',W*0.925,H*0.775,bs*1.15,bs*1.15,false);
+  multi('放置\nRMB',W*0.845,H*0.855,bs*1.10,bs*1.10,false);
+  multi('潜行\nShift',W*0.945,H*0.905,bs*1.05,bs*1.05,false);
+  multi('E',W*0.755,H*0.885,bs,bs,false);
+  multi('Q',W*0.955,H*0.455,bs*0.95,bs*0.95,false);
+  multi('设置',W*0.955,H*0.265,bs*0.95,bs*0.95,false);
+
+  // 状态
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#fff';ctx.font=`700 ${u*0.026}px "Noto Sans SC",sans-serif`;
+  ctx.fillText('按下：'+S.pressed.join(' '),W*0.028,H*0.055);
+  ctx.fillStyle='rgba(255,255,255,.8)';ctx.font=`400 ${u*0.019}px "Noto Sans SC",sans-serif`;
+  ctx.fillText(`X ${S.camX.toFixed(1)}  Z ${S.camZ.toFixed(1)}  YAW ${S.yaw}°  PITCH ${S.pitch}°   热键栏 ${S.sel+1}`,W*0.028,H*0.055+u*0.030);
+  ctx.textAlign='right';ctx.fillStyle='rgba(255,255,255,.66)';
+  ctx.fillText('PC 键位映射 · 方向键移动，右侧留白拖动转视角',W*0.972,H*0.055);
+  if(EDIT) drawEditHud();
+}
+const EDIT=/edit=1/.test(location.search);
+function drawEditHud(){
+  const u=Math.min(W,H),hs=u*0.020;
+  ctx.fillStyle='rgba(16,21,16,.88)';ctx.fillRect(0,0,W,H*0.125);
+  const done={x:W*0.60,y:H*0.035,w:W*0.11,h:H*0.065};
+  const reset={x:W*0.735,y:H*0.035,w:W*0.14,h:H*0.065};
+  ctx.fillStyle='rgba(69,122,82,.85)';rr(done.x,done.y,done.w,done.h,10);ctx.fill();
+  ctx.fillStyle='rgba(54,60,66,.85)';rr(reset.x,reset.y,reset.w,reset.h,10);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font=`700 ${u*0.024}px "Noto Sans SC",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('完成',done.x+done.w/2,done.y+done.h/2);ctx.fillText('恢复默认',reset.x+reset.w/2,reset.y+reset.h/2);
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.font=`700 ${u*0.030}px "Noto Sans SC",sans-serif`;ctx.fillText('编辑键位布局',W*0.030,H*0.048);
+  ctx.font=`400 ${u*0.019}px "Noto Sans SC",sans-serif`;ctx.fillStyle='rgba(255,255,255,.8)';
+  ctx.fillText('拖动按键 = 移动位置 · 拖右下角方块 = 缩放 · 松开即保存',W*0.030,H*0.088);
+  DRAWN.forEach(k=>{
+    ctx.strokeStyle='rgba(255,217,138,.85)';ctx.lineWidth=1.6;ctx.strokeRect(k.x,k.y,k.w,k.h);
+    ctx.fillStyle='rgba(255,217,138,.95)';ctx.fillRect(k.x+k.w-hs,k.y+k.h-hs,hs,hs);
+  });
+}
+resize();
+</script></body></html>
