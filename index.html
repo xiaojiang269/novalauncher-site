@@ -129,6 +129,8 @@ section{padding:58px 0}
 
 /* 界面长廊 */
 .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.strip.mob-strip{grid-template-columns:repeat(2,1fr);margin-top:14px}
+.strip.mob-strip figure img{aspect-ratio:5/2}
 .strip figure{margin:0;background:#120d09;border:3px solid #000;box-shadow:inset 0 0 0 2px #4f3b28}
 .strip img{width:100%;height:150px;object-fit:cover}
 .strip figcaption{display:flex;justify-content:space-between;gap:6px;padding:8px 9px;font-size:11.5px;background:#1a130e;border-top:3px solid #000}
@@ -344,9 +346,13 @@ footer{padding:22px}
   <div class="strip">
     <figure><img src="assets/desk-home.jpg" alt="主界面"><figcaption><b>主页</b><span>账户 · 启动配置</span></figcaption></figure>
     <figure><img src="assets/desk-ver.jpg" alt="版本库界面"><figcaption><b>版本库</b><span>安装 · 隔离 · 加载器</span></figcaption></figure>
-    <figure><img src="assets/desk-mod.jpg" alt="模组界面"><figcaption><b>模组</b><span>搜索 · 启用 · 冲突</span></figcaption></figure>
+    <figure><img src="assets/desk-mod.jpg" alt="模组下载界面"><figcaption><b>模组下载</b><span>Modrinth · 版本 · 一键下载</span></figcaption></figure>
     <figure><img src="assets/desk-set.jpg" alt="设置界面"><figcaption><b>设置</b><span>Java · 内存 · 外观</span></figcaption></figure>
     <figure><img src="assets/desk-more.jpg" alt="更多界面"><figcaption><b>更多</b><span>今日人品 · 彩蛋</span></figcaption></figure>
+  </div>
+  <div class="strip mob-strip">
+    <figure><img src="assets/mob-home.jpg" alt="手机版启动页"><figcaption><b>手机版 · 启动</b><span>账户 · 版本 · 日志</span></figcaption></figure>
+    <figure><img src="assets/mob-more.jpg" alt="手机版更多页"><figcaption><b>手机版 · 更多</b><span>今日人品 · 关于</span></figcaption></figure>
   </div>
 </section>
 
