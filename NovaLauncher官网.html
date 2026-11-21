@@ -246,6 +246,13 @@ footer{padding:22px}
   .foot-row .sp{margin-left:0}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.soonbar{display:flex;flex-direction:column;gap:4px;margin:16px 0 0;padding:14px 18px;background:#3a2a12;border:3px solid #d9a05b;box-shadow:4px 4px 0 #1a120a}
+.soonbar b{font-family:"Press Start 2P",monospace;font-size:15px;color:#ffd98a;letter-spacing:1px}
+.soonbar span{font-size:13px;color:#e8dcc8}
+.soonbtn{cursor:default;opacity:.6;pointer-events:none}
+.dl-off{opacity:.55;cursor:not-allowed;filter:grayscale(.5)}
+.tl-empty{padding:18px 20px;background:#161016;border:3px solid #000;box-shadow:inset 0 0 0 2px rgba(255,255,255,.06);color:#a99c8c;font-size:14px}
 </style>
 </head>
 <body>
@@ -265,8 +272,8 @@ footer{padding:22px}
       <a href="#faq">问题</a>
     </div>
     <div class="nav-cta">
-      <span class="ver">v3.2.5</span>
-      <a class="btn primary" href="#download">下载客户端</a>
+      <span class="ver">v0.0.1</span>
+      <span class="btn primary soonbtn">即将开始测试</span>
     </div>
   </div>
 </nav>
@@ -278,12 +285,13 @@ footer{padding:22px}
 <section class="hero" style="border-bottom:4px solid #000;box-shadow:inset 0 -4px 0 rgba(255,255,255,.04)">
   <header style="margin-bottom:30px;max-width:760px">
     <div class="eyebrow"><i></i>开源 · 跨平台 · 自带模组管理</div>
+    <div class="soonbar" id="soonbar"><b>启动器即将开始测试</b><span>版本 0.0.1 · 测试开始前暂不提供安装包</span></div>
     <h1 class="px">NOVA LAUNCHER
       <span class="cn">把整个方块世界，<br>收进<em>一个窗口</em>。</span>
     </h1>
     <p class="lede">NovaLauncher 是一款自研的 Minecraft 第三方启动器。版本安装、模组依赖、存档备份、Java 运行时和崩溃分析收在同一套流程里，Windows 与 macOS 用同一份代码，下载完就能开局。</p>
     <div class="hero-actions">
-      <a class="btn primary" href="#download">选择你的平台</a>
+      <span class="btn primary soonbtn">启动器即将开始测试</span>
       <a class="btn ghost" href="https://github.com/xiaojiang269/NovaLauncher" target="_blank" rel="noopener">查看源码仓库</a>
     </div>
     <div class="facts">
@@ -297,7 +305,7 @@ footer{padding:22px}
   <div class="shot">
     <div class="grassbar" aria-hidden="true"></div>
     <img src="assets/desk-home.jpg" alt="NovaLauncher 桌面版主界面" width="1160" height="640">
-    <div class="cap"><b>桌面版 3.2.5 · 主界面</b><span>高清方块世界背景 · 半透明侧边栏</span></div>
+    <div class="cap"><b>桌面版 0.0.1 · 主界面</b><span>高清方块世界背景 · 半透明侧边栏</span></div>
   </div>
 </section>
 
@@ -396,11 +404,11 @@ footer{padding:22px}
 <section id="download">
   <div class="sect-head">
     <span class="kicker">DOWNLOADS</span>
-    <h2>三个安装包，按你手上的机器选</h2>
-    <p>桌面版是自包含压缩包，解压即用、不需要安装 .NET 运行时，配置和存档都留在本地。</p>
+    <h2>安装包暂未开放</h2>
+    <p>启动器即将开始测试。测试开始后，各平台安装包会在这里放出，桌面版仍是自包含压缩包，解压即用。</p>
   </div>
   <div class="dl">
-    <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.5/NovaLauncher-v3.2.5-Windows-x64.zip" target="_blank" rel="noopener">
+    <a href="javascript:void(0)" class="dl-off" aria-disabled="true">
       <svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
         <rect width="16" height="16" fill="#120d09"/>
         <rect x="2" y="2" width="5" height="5" fill="#7bd85a"/><rect x="9" y="2" width="5" height="5" fill="#7bd85a"/>
@@ -408,10 +416,10 @@ footer{padding:22px}
       </svg>
       <span class="os">WINDOWS</span>
       <span class="nm">Windows x64</span>
-      <span class="meta">v3.2.5 · zip</span>
-      <span class="go">下载</span>
+      <span class="meta">v0.0.1 · 未开放</span>
+      <span class="go">即将开放</span>
     </a>
-    <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.5/NovaLauncher-v3.2.5-macOS-arm64.app.zip" target="_blank" rel="noopener">
+    <a href="javascript:void(0)" class="dl-off" aria-disabled="true">
       <svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
         <rect width="16" height="16" fill="#120d09"/>
         <rect x="4" y="6" width="8" height="5" fill="#f2ece0"/>
@@ -423,10 +431,10 @@ footer{padding:22px}
       </svg>
       <span class="os">MACOS · ARM64</span>
       <span class="nm">Apple 芯片</span>
-      <span class="meta">v3.2.5 · app.zip</span>
-      <span class="go">下载</span>
+      <span class="meta">v0.0.1 · 未开放</span>
+      <span class="go">即将开放</span>
     </a>
-    <a href="https://github.com/xiaojiang269/NovaLauncher/releases/download/v3.2.5/NovaLauncher-v3.2.5-macOS-x64.app.zip" target="_blank" rel="noopener">
+    <a href="javascript:void(0)" class="dl-off" aria-disabled="true">
       <svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
         <rect width="16" height="16" fill="#120d09"/>
         <rect x="4" y="4" width="8" height="8" fill="#6b543b"/>
@@ -437,13 +445,13 @@ footer{padding:22px}
       </svg>
       <span class="os">MACOS · INTEL</span>
       <span class="nm">Intel 芯片</span>
-      <span class="meta">v3.2.5 · app.zip</span>
-      <span class="go">下载</span>
+      <span class="meta">v0.0.1 · 未开放</span>
+      <span class="go">即将开放</span>
     </a>
   </div>
   <div class="note">
-    <span><b>手机版</b>正在内测，等稳定后再放出安装包，暂不提供下载。</span>
-    <span><b>全部历史版本</b> <a href="https://github.com/xiaojiang269/NovaLauncher/releases" target="_blank" rel="noopener">GitHub Releases</a></span>
+    <span><b>启动器即将开始测试</b>，0.0.1 为当前版本号，测试开始后各平台安装包统一放出。</span>
+    <span><b>手机版</b>随后跟进，暂不提供下载。</span>
   </div>
 </section>
 
@@ -452,90 +460,9 @@ footer{padding:22px}
   <div class="sect-head">
     <span class="kicker">CHANGELOG</span>
     <h2>更新日志</h2>
-    <p>启动器每 24 小时检查一次发布，桌面版只下载与自身架构匹配的完整包。</p>
+    <p>测试开始前不提供更新，0.0.1 为当前版本号。</p>
   </div>
-  <div class="tl">
-    <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>手机版 4.0.28 <span class="tag">内测</span></h3>
-      <ul>
-        <li>「正在准备 Java / 游戏文件」提示框从游戏画面移入「设置」面板，画面更干净</li>
-        <li>设置面板里可直接看到 Java 运行环境状态与最近几行解压、自检日志</li>
-        <li>虚拟按键改为直接调用可执行库导出的输入函数，修掉之前按键投递丢失的问题</li>
-        <li>仍为内测：界面与渲染链路在收尾，稳定后在下载页放出安装包</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>全平台 v3.2.5 <span class="tag">图标</span></h3>
-      <ul>
-        <li>换成 PCL 风格方块图标：草皮＋泥土＋像素 N，直角正方形，32px 下仍可辨认</li>
-        <li>桌面窗口图标、Windows exe、macOS icns、安卓各密度、PWA 与官网图标统一为同一套</li>
-        <li>官网整站改为方块像素风，导航、按钮、卡片全部换成 MC 的 GUI 质感</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>桌面版 3.2.4 <span class="tag">桌面端</span></h3>
-      <ul>
-        <li>模组下载页进入即按当前筛选拉取热门模组，直接在本页列出，不必先搜索</li>
-        <li>搜索区改为两行自适应布局，窄窗口不再横向截断右侧版本列</li>
-        <li>模组搜索支持中文关键词，输入「钠」「机械动力」也能命中对应英文模组</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>手机版 3.4.7 <span class="tag">内测中</span></h3>
-      <ul>
-        <li>模组页接入 Modrinth 在线源：搜索、筛选、下载到本机 mods 目录</li>
-        <li>版本页改为全量清单，支持搜索与快照开关，925 个版本逐条标注所需 Java</li>
-        <li>首次启动自动检查 Java，缺失时装好再进主界面</li>
-        <li>更新检查改为读取 APK 资产版本号，发现新版直接下载安装</li>
-        <li>安装包仍在内部测试，暂不公开下载</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>手机版 3.3.1 <span class="tag">内测中</span></h3>
-      <ul>
-        <li>新增原生网络桥，修复包内检查更新被跨域拦截失败的问题</li>
-        <li>横屏 / 竖屏两个安装包，同签名可直接覆盖升级（尚未公开下载）</li>
-        <li>界面整包内嵌，断网状态下同样可以进入启动页</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.11</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>桌面版 3.2.2 <span class="tag">桌面端</span></h3>
-      <ul>
-        <li>自动更新改为架构感知，避免在 Apple 芯片上下到 Intel 包</li>
-        <li>模组搜索支持按加载器过滤，结果为空时给出原因提示</li>
-        <li>启动日志增加下载进度行，长时间无响应可看到具体卡点</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.10</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>桌面版 3.2.1 <span class="tag">桌面端</span></h3>
-      <ul>
-        <li>液态玻璃模式上线，标题栏与侧边栏同步半透明</li>
-        <li>整层高清方块世界背景，透明度可在设置中调整</li>
-      </ul>
-    </div>
-
-    <div class="tl-time">2026.09</div><div class="tl-rule"><i></i></div>
-    <div class="tl-body">
-      <h3>桌面版 3.2.0 <span class="tag">桌面端</span></h3>
-      <ul>
-        <li>更多页面加入今日人品与「千万别点」，还原同类启动器的彩蛋</li>
-        <li>崩溃分析支持直接读出出错的模组文件名</li>
-      </ul>
-    </div>
-  </div>
+  <div class="tl-empty">暂无更新记录 · 0.0.1 测试版发布后在此登记</div>
 </section>
 
 <!-- ===== FAQ ===== -->
@@ -578,15 +505,14 @@ footer{padding:22px}
       <h2>下一步是双击那个图标</h2>
       <p>下载对应平台的压缩包或安装包，解压、打开、选版本，然后进游戏。</p>
     </div>
-    <a class="btn primary" href="#download" style="margin-right:22px">回到下载</a>
+    <span class="btn primary soonbtn" style="margin-right:22px">等待测试开始</span>
   </div>
 </div>
 
 <footer>
   <div class="foot-row">
-    <span>NovaLauncher v3.2.5</span>
+    <span>NovaLauncher v0.0.1</span>
     <a href="https://github.com/xiaojiang269/NovaLauncher" target="_blank" rel="noopener">源码</a>
-    <a href="https://github.com/xiaojiang269/NovaLauncher/releases" target="_blank" rel="noopener">全部发布</a>
     <a href="https://github.com/xiaojiang269/NovaLauncher/issues" target="_blank" rel="noopener">反馈</a>
     <span class="sp">Minecraft 为 Mojang Studios 商标，本项目与其无隶属关系。</span>
   </div>
