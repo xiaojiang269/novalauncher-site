@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>HCL · 启动器资讯与预约</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Press+Start+2P&display=swap">
+<meta name="theme-color" content="#0e1310">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --gui:#c6c6c6; --gui-dark:#8b8b8b; --frame:#373737;
+  --txt:#ffffff; --dim:#a9a9a9; --green:#7bd85a; --gold:#ffd24a; --slot:#8b8b8b;
+}
+html,body{margin:0;min-height:100%}
+body{
+  background-color:#1c1c1c;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px),
+    repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0 2px,transparent 2px 4px),
+    linear-gradient(180deg,#2b2b2b,#151515 70%);
+  color:var(--txt);
+  font:15px/1.6 "Press Start 2P","PingFang SC","Microsoft YaHei",monospace;
+  letter-spacing:.2px;
+  padding-bottom:calc(86px + env(safe-area-inset-bottom));
+  text-shadow:2px 2px 0 rgba(0,0,0,.7);
+}
+.wrap{max-width:430px;margin:0 auto;padding:0 12px}
+
+/* 顶栏：MC 标题框 */
+.top{position:sticky;top:0;z-index:20;background:#2f2f2f;
+  border-bottom:3px solid #000;
+  box-shadow:inset 0 -3px 0 #4a4a4a, 0 3px 0 rgba(0,0,0,.6)}
+.top-in{max-width:430px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;display:grid;place-items:center;flex:none;
+  background:#3f7a2b;border:3px solid #000;
+  box-shadow:inset 3px 3px 0 #6ab248, inset -3px -3px 0 #204d12;
+  font-size:13px;color:#fff;font-weight:700;letter-spacing:1px}
+.brand b{font-size:16px;letter-spacing:1px;display:block}
+.brand span{display:block;font-size:10px;color:var(--dim);letter-spacing:.6px;margin-top:2px}
+.top-right{margin-left:auto}
+.chip{border:2px solid #000;background:#5c5c5c;color:#e6e6e6;
+  padding:5px 9px;font-size:10px;
+  box-shadow:inset 2px 2px 0 #888, inset -2px -2px 0 #333}
+.chip.on{background:#3f7a2b;color:#f0ffe6}
+
+/* 面板 */
+.card{position:relative;background:#3b3b3b;border:3px solid #000;padding:14px;margin:12px 0;
+  box-shadow:inset 3px 3px 0 #5a5a5a, inset -3px -3px 0 #1f1f1f}
+.card h3{margin:0 0 8px;font-size:14px;letter-spacing:.6px;color:#fff}
+.card .meta{color:var(--dim);font-size:11px;line-height:1.8;text-shadow:1px 1px 0 #000}
+
+/* 标签：物品栏小格 */
+.tag{display:inline-block;font-size:10px;padding:3px 7px;margin-right:6px;
+  background:#6e6e6e;border:2px solid #000;color:#fff;
+  box-shadow:inset 2px 2px 0 #9a9a9a, inset -2px -2px 0 #3a3a3a}
+.tag.amber{background:#7a5f22;color:#ffe9a8}
+.tag.brown{background:#5f4a33;color:#ffe0bb}
+
+/* 按钮：MC 经典灰按钮 */
+.btn{width:100%;padding:12px 14px;font:inherit;font-size:13px;color:#fff;cursor:pointer;
+  background:#6e6e6e;border:3px solid #000;
+  box-shadow:inset 3px 3px 0 #9a9a9a, inset -3px -3px 0 #3a3a3a;
+  letter-spacing:.5px}
+.btn:active{transform:translate(1px,1px);box-shadow:inset 2px 2px 0 #3a3a3a, inset -2px -2px 0 #7a7a7a}
+.btn.ghost{background:#4a4a4a;box-shadow:inset 3px 3px 0 #6f6f6f, inset -3px -3px 0 #2a2a2a}
+.btn.sm{width:auto;padding:8px 12px;font-size:11px}
+.btn.danger{background:#7a2a2a;box-shadow:inset 3px 3px 0 #a54a4a, inset -3px -3px 0 #401414}
+
+/* 输入：书与笔风格 */
+.field{margin:12px 0}
+.field label{display:block;font-size:11px;color:var(--gold);margin-bottom:6px;letter-spacing:.6px}
+input,select,textarea{width:100%;background:#101010;border:2px solid #000;color:#fff;
+  padding:11px 10px;font:inherit;font-size:13px;outline:none;
+  box-shadow:inset 2px 2px 0 #3a3a3a, inset -2px -2px 0 #0a0a0a}
+input:focus,select:focus,textarea:focus{background:#151d15;border-color:#3f7a2b}
+textarea{resize:vertical;min-height:88px}
+::placeholder{color:#6f6f6f}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1 1 30%;min-width:92px;cursor:pointer;font:inherit;font-size:12px;
+  padding:10px 8px;color:#c9c9c9;background:#4a4a4a;border:2px solid #000;
+  box-shadow:inset 2px 2px 0 #6f6f6f, inset -2px -2px 0 #2a2a2a}
+.seg button.on{background:#3f7a2b;color:#f0ffe6;box-shadow:inset 2px 2px 0 #6ab248, inset -2px -2px 0 #204d12}
+
+/* 分区标题：告示牌风 */
+.sec{display:flex;align-items:center;gap:8px;margin:18px 0 2px}
+.sec h2{margin:0;font-size:14px;letter-spacing:1px;color:#e9e9e9}
+.sec .line{flex:1;height:3px;background:#000;box-shadow:inset 0 2px 0 #4a4a4a}
+.sec .hint{font-size:10px;color:var(--dim)}
+
+/* 列表项 */
+.item{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:2px solid #262626}
+.item:last-child{border-bottom:0}
+.ava{width:40px;height:40px;flex:none;display:grid;place-items:center;font-size:13px;font-weight:700;
+  color:#12160f;background:linear-gradient(160deg,#9be07a,#4f8a32);
+  border:2px solid #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.4)}
+.grow{flex:1;min-width:0}
+.grow b{font-size:13px}
+.grow .sub{color:var(--dim);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{color:var(--dim);font-size:12px;text-align:center;padding:26px 0;
+  border:2px dashed #3a3a3a;margin:10px 0}
+
+/* 预约卡：成就框 */
+.slot{background:#333;border:3px solid #000;padding:14px;margin:12px 0;
+  box-shadow:inset 3px 3px 0 #555, inset -3px -3px 0 #1c1c1c}
+.slot .no{font-size:10px;color:var(--dim);letter-spacing:1px}
+.slot .big{font-size:14px;margin:6px 0 4px;color:#fff}
+.slot .row{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--dim);margin-top:10px}
+.slot .state{color:var(--gold)}
+
+/* 底栏：快捷栏 4 格 */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#2f2f2f;
+  border-top:3px solid #000;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  box-shadow:inset 0 3px 0 #4a4a4a}
+.tabs-in{max-width:430px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tabs-in a{display:flex;flex-direction:column;align-items:center;gap:4px;
+  text-decoration:none;color:#bdbdbd;font-size:10px;padding:8px 3px;
+  background:#4a4a4a;border:2px solid #000;
+  box-shadow:inset 2px 2px 0 #6f6f6f, inset -2px -2px 0 #2a2a2a}
+.tabs-in a i{font-size:17px;font-style:normal;line-height:1}
+.tabs-in a.on{background:#3f7a2b;color:#f2ffe8;
+  box-shadow:inset 2px 2px 0 #6ab248, inset -2px -2px 0 #204d12}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+  background:#3b3b3b;border:3px solid #000;color:#fff;padding:10px 16px;font-size:12px;
+  opacity:0;transition:.2s;pointer-events:none;z-index:60;max-width:84vw;
+  box-shadow:inset 2px 2px 0 #6f6f6f, inset -2px -2px 0 #1f1f1f}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo">HCL</div>
+    <div class="brand"><b>HCL</b><span>启动器资讯 · 预约 · 账号</span></div>
+    <div class="top-right"><span class="chip" id="hdrChip">本地演示</span></div>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<nav class="tabs">
+  <div class="tabs-in" id="tabs"></div>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 数据层 ===== */
+const KEY='hcl_store_v2';
+const seedNews=[
+  {id:1,title:'HCL 启动器 0.0.1 测试版开测预告',tag:'公告',time:'2026-11-23 09:20',
+   body:'测试版将于近期开放预约。本版本固定展示版本号 0.0.1，界面左下角带测试版角标，更新在启动器内直接完成，不跳浏览器。'},
+  {id:2,title:'账号系统支持多账号切换',tag:'功能',time:'2026-11-22 18:05',
+   body:'同一台设备可保存多个账号，一键切换；离线账号与正版账号可在同一列表里管理，凭据只留本地。'},
+  {id:3,title:'预约须知：名额按提交顺序发放',tag:'预约',time:'2026-11-22 12:40',
+   body:'预约成功后获得预约号，开放测试时按预约号顺序分配，可在「预约」页查看状态与预计开放时间。'},
+  {id:4,title:'HCL 是什么',tag:'介绍',time:'2026-11-21 20:10',
+   body:'HCL 是一个启动器资讯与预约平台：发布各款启动器的更新消息，提供测试名额预约，同时集中管理你的启动器账号。'}
+];
+const seedAccounts=[]; // 不预置任何示例账号，列表由用户自己添加
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      // 清掉历史遗留的示例账号
+      if(d.accounts) d.accounts=d.accounts.filter(a=>!['steve@hcl.local','alex@hcl.local'].includes(a.email));
+      if(!d.accounts||!d.accounts.length) d.accounts=[];
+      if(d.accounts.length&&!d.accounts.some(a=>a.active)) d.accounts[0].active=true;
+      return d;
+    }
+  }catch(e){}
+  return {news:seedNews.slice(),tickets:[],accounts:seedAccounts.slice(),seq:1001};
+}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function fmt(d){const p=n=>('0'+n).slice(-2);return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
+
+/* ===== 视图状态 ===== */
+let view='news';
+let newsForm=false, accForm=false, ticketForm=false;
+let form={tag:'公告',title:'',body:'',plat:'Windows',chan:'测试版',nick:'',note:''};
+
+/* ===== 工具 ===== */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1900)}
+
+/* ===== 视图：资讯 ===== */
+function viewNews(){
+  const list=S.news.slice().sort((a,b)=>b.id-a.id);
+  return `
+  <div class="sec"><h2>启动器资讯</h2><div class="line"></div><span class="hint">${list.length} 条</span></div>
+  ${newsForm?newsFormHTML():''}
+  ${list.length?list.map(n=>`
+    <article class="card">
+      <div><span class="tag ${n.tag==='公告'?'amber':(n.tag==='预约'?'brown':'')}">${esc(n.tag)}</span>
+        <span class="meta">${esc(n.time)}</span></div>
+      <h3 style="margin-top:8px">${esc(n.title)}</h3>
+      <div class="meta" style="color:#c8d3c6;line-height:1.7">${esc(n.body)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn ghost sm" onclick="delNews(${n.id})">删除</button>
+        ${n.id===S.news.slice().sort((a,b)=>b.id-a.id)[0].id?`<button class="btn ghost sm" onclick="toast('已置顶到最新')">置顶</button>`:''}
+      </div>
+    </article>`).join(''):`<div class="empty">暂无资讯</div>`}
+  ${newsForm?'':`<button class="btn" onclick="toggleNewsForm(true)" style="margin-top:6px">＋ 发布资讯</button>`}
+  `;
+}
+function newsFormHTML(){
+  return `<div class="card">
+    <h3>发布资讯</h3>
+    <div class="field"><label>标题</label><input id="fTitle" value="${esc(form.title)}" placeholder="例如：1.20.1 兼容修复"></div>
+    <div class="field"><label>正文</label><textarea id="fBody" placeholder="写清更新内容、影响范围">${esc(form.body)}</textarea></div>
+    <div class="field"><label>标签</label><div class="seg" id="fTag">
+      ${['公告','功能','预约','介绍'].map(t=>`<button class="${form.tag===t?'on':''}" onclick="pick('tag','${t}')">${t}</button>`).join('')}
+    </div></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn" onclick="submitNews()">发布</button>
+      <button class="btn ghost" onclick="toggleNewsForm(false)">取消</button>
+    </div>
+  </div>`;
+}
+
+/* ===== 视图：预约 ===== */
+function viewBook(){
+  const mine=S.tickets.slice().reverse();
+  return `
+  <div class="sec"><h2>预约启动器</h2><div class="line"></div><span class="hint">按提交顺序发放</span></div>
+  ${ticketForm?ticketFormHTML():`
+    <div class="card">
+      <h3>测试名额预约</h3>
+      <div class="meta">当前开放：HCL 启动器 0.0.1 测试版 · 桌面 / 移动三平台</div>
+      <button class="btn" style="margin-top:12px" onclick="toggleTicketForm(true)">立即预约</button>
+    </div>`}
+  <div class="sec"><h2>我的预约</h2><div class="line"></div><span class="hint">${mine.length} 条</span></div>
+  ${mine.length?mine.map(t=>`
+    <div class="slot">
+      <div class="no">预约号 HCL-${t.no}</div>
+      <div class="big">${esc(t.plat)} · ${esc(t.chan)}</div>
+      <div class="meta">昵称 ${esc(t.nick)}${t.note?' · '+esc(t.note):''}</div>
+      <div class="row"><span>提交时间 ${esc(t.time)}</span><span class="state">${esc(t.state)}</span></div>
+      <div style="margin-top:10px"><button class="btn ghost sm" onclick="cancelTicket(${t.id})">取消预约</button></div>
+    </div>`).join(''):`<div class="empty">还没有预约，点上方「立即预约」</div>`}
+  `;
+}
+function ticketFormHTML(){
+  return `<div class="card">
+    <h3>填写预约信息</h3>
+    <div class="field"><label>平台</label><div class="seg">
+      ${['Windows','macOS','Android'].map(p=>`<button class="${form.plat===p?'on':''}" onclick="pick('plat','${p}')">${p}</button>`).join('')}
+    </div></div>
+    <div class="field"><label>版本渠道</label><div class="seg">
+      ${['测试版','正式版'].map(c=>`<button class="${form.chan===c?'on':''}" onclick="pick('chan','${c}')">${c}</button>`).join('')}
+    </div></div>
+    <div class="field"><label>游戏昵称</label><input id="fNick" value="${esc(form.nick)}" placeholder="例如：Steve"></div>
+    <div class="field"><label>备注（选填）</label><input id="fNote" value="${esc(form.note)}" placeholder="例如：需要键盘鼠标映射"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn" onclick="submitTicket()">提交预约</button>
+      <button class="btn ghost" onclick="toggleTicketForm(false)">取消</button>
+    </div>
+  </div>`;
+}
+
+/* ===== 视图：账号 ===== */
+function viewAcc(){
+  const list=S.accounts;
+  const cur=list.find(a=>a.active);
+  return `
+  <div class="sec"><h2>账号管理</h2><div class="line"></div><span class="hint">${list.length} 个</span></div>
+  <div class="card">
+    <div class="meta">当前使用</div>
+    <div class="item" style="border-bottom:0;padding-bottom:0">
+      <div class="ava">${cur?esc(cur.name.slice(0,1).toUpperCase()):'?'}</div>
+      <div class="grow"><b>${cur?esc(cur.name):'未登录'}</b>
+        <div class="sub">${cur?esc(cur.email)+' · '+esc(cur.type):'先添加一个账号'}</div></div>
+      <span class="chip on">使用中</span>
+    </div>
+  </div>
+  ${accForm?accFormHTML():''}
+  <div class="card">
+    <h3>账号列表</h3>
+    ${list.length?list.map(a=>`
+      <div class="item">
+        <div class="ava" style="${a.active?'':'filter:grayscale(.5)'}">${esc(a.name.slice(0,1).toUpperCase())}</div>
+        <div class="grow"><b>${esc(a.name)} ${a.bind?'<span class="tag">已绑定</span>':''}</b>
+          <div class="sub">${esc(a.email)} · ${esc(a.type)}</div></div>
+        <div style="display:flex;gap:6px">
+          ${a.active?'':`<button class="btn ghost sm" onclick="switchAcc(${a.id})">切换</button>`}
+          <button class="btn danger sm" onclick="delAcc(${a.id})">删除</button>
+        </div>
+      </div>`).join(''):`<div class="empty">还没有账号</div>`}
+    ${accForm?'':`<button class="btn" style="margin-top:12px" onclick="toggleAccForm(true)">＋ 添加账号</button>`}
+  </div>`;
+}
+function accFormHTML(){
+  return `<div class="card">
+    <h3>添加账号</h3>
+    <div class="field"><label>账号名称</label><input id="aName" value="" placeholder="例如：Steve"></div>
+    <div class="field"><label>邮箱 / 标识</label><input id="aMail" value="" placeholder="例如：steve@hcl.local"></div>
+    <div class="field"><label>类型</label><div class="seg">
+      ${['离线','正版'].map(t=>`<button class="${form.accType===t?'on':''}" onclick="pick('accType','${t}')">${t}</button>`).join('')}
+    </div></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn" onclick="submitAcc()">添加并设为当前</button>
+      <button class="btn ghost" onclick="toggleAccForm(false)">取消</button>
+    </div>
+  </div>`;
+}
+
+/* ===== 视图：我的 ===== */
+function viewMe(){
+  const n=S.news.length, t=S.tickets.length, a=S.accounts.length;
+  return `
+  <div class="sec"><h2>我的 HCL</h2><div class="line"></div></div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:8px">
+      <div><b style="font-size:22px;color:#b6ef98">${n}</b><div class="meta">资讯</div></div>
+      <div><b style="font-size:22px;color:var(--amber)">${t}</b><div class="meta">预约</div></div>
+      <div><b style="font-size:22px;color:#9fd8ff">${a}</b><div class="meta">账号</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>数据与说明</h3>
+    <div class="meta" style="line-height:1.8">所有资讯、预约与账号数据保存在本机浏览器（localStorage），不上传服务器；换设备或清理浏览器数据会丢失。演示环境默认带 4 条资讯，账号列表为空，由你自己添加。</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn ghost" onclick="resetAll()">恢复演示数据</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>关于</h3>
+    <div class="meta" style="line-height:1.8">HCL · 启动器资讯与预约平台<br>版本 0.0.1（演示原型）<br>资讯发布、名额预约、账号集中管理三件事收在一个入口里。</div>
+  </div>`;
+}
+
+/* ===== 渲染 ===== */
+const TABS=[
+  {k:'news',t:'资讯',i:'📰'},
+  {k:'book',t:'预约',i:'🎟️'},
+  {k:'acc',t:'账号',i:'👤'},
+  {k:'me',t:'我的',i:'⚙️'}
+];
+function render(){
+  document.getElementById('main').innerHTML =
+    view==='news'?viewNews():view==='book'?viewBook():view==='acc'?viewAcc():viewMe();
+  document.getElementById('tabs').innerHTML = TABS.map(t=>
+    `<a href="#${t.k}" class="${view===t.k?'on':''}"><i>${t.i}</i>${t.t}</a>`).join('');
+  document.getElementById('hdrChip').textContent = view==='acc'?'账号本地保存':'本地演示';
+}
+
+/* ===== 交互 ===== */
+function pick(k,v){form[k]=v;render()}
+function toggleNewsForm(v){newsForm=v;if(!v)form.title=form.body='';render()}
+function toggleTicketForm(v){ticketForm=v;render()}
+function toggleAccForm(v){accForm=v;render()}
+function submitNews(){
+  const title=(document.getElementById('fTitle')||{}).value||'';
+  const body=(document.getElementById('fBody')||{}).value||'';
+  if(!title.trim()){toast('标题不能为空');return}
+  if(!body.trim()){toast('正文不能为空');return}
+  const id=Math.max(0,...S.news.map(n=>n.id))+1;
+  S.news.push({id,title:title.trim(),body:body.trim(),tag:form.tag,time:fmt(new Date())});
+  form.title=form.body='';newsForm=false;save();render();toast('资讯已发布');
+}
+function delNews(id){
+  S.news=S.news.filter(n=>n.id!==id);save();render();toast('已删除该条资讯');
+}
+function submitTicket(){
+  const nick=(document.getElementById('fNick')||{}).value||'';
+  const note=(document.getElementById('fNote')||{}).value||'';
+  if(!nick.trim()){toast('请填写游戏昵称');return}
+  const no=S.seq++;
+  S.tickets.push({id:Date.now(),no,nick:nick.trim(),note:note.trim(),plat:form.plat,chan:form.chan,
+    time:fmt(new Date()),state:'排队中'});
+  form.nick=form.note='';ticketForm=false;save();render();toast('预约成功，预约号 HCL-'+no);
+}
+function cancelTicket(id){
+  S.tickets=S.tickets.filter(t=>t.id!==id);save();render();toast('已取消预约');
+}
+function submitAcc(){
+  const name=(document.getElementById('aName')||{}).value||'';
+  const mail=(document.getElementById('aMail')||{}).value||'';
+  if(!name.trim()){toast('请填写账号名称');return}
+  const id=Date.now();
+  S.accounts.forEach(a=>a.active=false);
+  S.accounts.push({id,name:name.trim(),email:(mail.trim()||name.trim()+'@hcl.local'),
+    type:form.accType||'离线',bind:form.accType==='正版',active:true});
+  accForm=false;save();render();toast('已添加并切换');
+}
+function switchAcc(id){
+  S.accounts.forEach(a=>a.active=(a.id===id));save();render();toast('已切换账号');
+}
+function delAcc(id){
+  const wasActive=(S.accounts.find(a=>a.id===id)||{}).active;
+  S.accounts=S.accounts.filter(a=>a.id!==id);
+  if(wasActive&&S.accounts.length) S.accounts[0].active=true;
+  save();render();toast('已删除账号');
+}
+function resetAll(){
+  S=load();save();render();toast('已恢复演示数据');
+}
+
+/* ===== 路由 ===== */
+function route(){
+  const h=(location.hash||'#news').replace('#','');
+  view=(TABS.some(t=>t.k===h))?h:'news';
+  newsForm=accForm=ticketForm=false;
+  render();
+}
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
